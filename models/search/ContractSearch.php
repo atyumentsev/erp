@@ -1,0 +1,50 @@
+<?php
+
+namespace app\models\search;
+
+use app\models\Contract;
+use yii\base\Model;
+use yii\data\ActiveDataProvider;
+
+class ContractSearch extends Contract
+{
+    public function rules()
+    {
+        // only fields in rules() are searchable
+        return [
+            [['name', 'code_1c'], 'safe'],
+            [['affiliate_id', 'counteragent_id'], 'integer'],
+        ];
+    }
+
+    public function scenarios()
+    {
+        // bypass scenarios() implementation in the parent class
+        return Model::scenarios();
+    }
+
+    public function search($params)
+    {
+        $query = Contract::find()
+            ->with('currency')
+            ->with('affiliate')
+            ->with('counterAgent');
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        // load the search form data and validate
+        if (!($this->load($params) && $this->validate())) {
+            return $dataProvider;
+        }
+
+        // adjust the query by adding the filters
+        $query->andFilterWhere(['like', 'name', $this->name])
+            ->andFilterWhere(['like', 'code_1c', $this->code_1c])
+            ->andFilterWhere(['affiliate_id' => $this->affiliate_id])
+            ->andFilterWhere(['counteragent_id' => $this->counteragent_id]);
+
+        return $dataProvider;
+    }
+}
