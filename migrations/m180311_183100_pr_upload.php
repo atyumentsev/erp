@@ -33,6 +33,6 @@ class m180311_183100_pr_upload extends Migration
         $this->dropColumn('payment_request', 'uuid');
         $this->dropColumn('payment_request', 'expense_date');
         $this->dropColumn('payment_request', 'status_1c');
-//        $this->dropColumn('payment_request', 'last_approver_id');
+        $this->dropColumn('payment_request', 'last_approver_id');
     }
 }
