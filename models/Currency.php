@@ -19,6 +19,14 @@ use yii\db\ActiveRecord;
  */
 class Currency extends ActiveRecord
 {
+    const CODE_CAD = 124;
+    const CODE_CNY = 156;
+    const CODE_HKD = 344;
+    const CODE_JPY = 392;
+    const CODE_RUB = 643;
+    const CODE_GBP = 826;
+    const CODE_USD = 840;
+    const CODE_EUR = 978;
 
     /**
      * @inheritdoc

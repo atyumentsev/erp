@@ -178,53 +178,11 @@ class m171111_211142_user_table extends Migration
                 'code_1c' => trim($user[1]),
                 'name' => trim($user[0]),
                 'parent_name' => trim($user[3]),
-                'username' => $this->getUsername($user[1]),
+                'username' => User::getUsername($user[1]),
                 'status' => User::STATUS_ACTIVE,
                 'password_hash' => User::getSaltedPassword('password'),
             ]);
         }
-    }
-
-    private function transliterate($name)
-    {
-        $converter = array(
-            'а' => 'a',   'б' => 'b',   'в' => 'v',
-            'г' => 'g',   'д' => 'd',   'е' => 'e',
-            'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
-            'и' => 'i',   'й' => 'y',   'к' => 'k',
-            'л' => 'l',   'м' => 'm',   'н' => 'n',
-            'о' => 'o',   'п' => 'p',   'р' => 'r',
-            'с' => 's',   'т' => 't',   'у' => 'u',
-            'ф' => 'f',   'х' => 'h',   'ц' => 'c',
-            'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
-            'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
-            'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
-
-            'А' => 'A',   'Б' => 'B',   'В' => 'V',
-            'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
-            'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
-            'И' => 'I',   'Й' => 'Y',   'К' => 'K',
-            'Л' => 'L',   'М' => 'M',   'Н' => 'N',
-            'О' => 'O',   'П' => 'P',   'Р' => 'R',
-            'С' => 'S',   'Т' => 'T',   'У' => 'U',
-            'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
-            'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
-            'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
-            'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
-        );
-        return strtr($name, $converter);
-    }
-
-    private function getUsername($name)
-    {
-        $ret = $this->transliterate($name);
-        if (($pos = strpos($ret, '(')) > 0) {
-            $ret = substr($ret, 0, $pos - 1);
-        }
-        $ret = strtolower($ret);
-        $ret = str_replace(['.', ' '], '', $ret);
-        $ret = str_replace('\'', 'y', $ret);
-        return $ret;
     }
 
     /**

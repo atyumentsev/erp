@@ -11,6 +11,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * Class User
  * @package app\models
  *
+ * @property integer $id
  * @property string $code_1c
  * @property string $username
  * @property string $short_name
@@ -169,16 +170,16 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
         return md5(\Yii::$app->params['password_salt'] . $password);
     }
 
-    public function beforeSave($insert)
-    {
-        if (parent::beforeSave($insert)) {
-            if ($this->isNewRecord) {
-                $this->auth_key = \Yii::$app->security->generateRandomString();
-            }
-            return true;
-        }
-        return false;
-    }
+//    public function beforeSave($insert)
+//    {
+//        if (parent::beforeSave($insert)) {
+//            if ($this->isNewRecord) {
+//                $this->auth_key = \Yii::$app->security->generateRandomString();
+//            }
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * Finds an identity by the given ID.
@@ -224,5 +225,57 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     public function getUserSettings()
     {
         return $this->hasOne(UserSettings::className(), ['user_id' => 'id']);
+    }
+
+    private static function transliterate($name)
+    {
+        $converter = array(
+            'а' => 'a',   'б' => 'b',   'в' => 'v',
+            'г' => 'g',   'д' => 'd',   'е' => 'e',
+            'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
+            'и' => 'i',   'й' => 'y',   'к' => 'k',
+            'л' => 'l',   'м' => 'm',   'н' => 'n',
+            'о' => 'o',   'п' => 'p',   'р' => 'r',
+            'с' => 's',   'т' => 't',   'у' => 'u',
+            'ф' => 'f',   'х' => 'h',   'ц' => 'c',
+            'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
+            'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
+            'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
+
+            'А' => 'A',   'Б' => 'B',   'В' => 'V',
+            'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
+            'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
+            'И' => 'I',   'Й' => 'Y',   'К' => 'K',
+            'Л' => 'L',   'М' => 'M',   'Н' => 'N',
+            'О' => 'O',   'П' => 'P',   'Р' => 'R',
+            'С' => 'S',   'Т' => 'T',   'У' => 'U',
+            'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
+            'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
+            'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
+            'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
+        );
+        return strtr($name, $converter);
+    }
+
+    public static function getUsername($name)
+    {
+        $ret = self::transliterate($name);
+        if (($pos = strpos($ret, '(')) > 0) {
+            $ret = substr($ret, 0, $pos - 1);
+        }
+        $ret = strtolower($ret);
+        $ret = str_replace(['.', ' '], '', $ret);
+        $ret = str_replace('\'', 'y', $ret);
+        return $ret;
+    }
+
+    public static function getShortName(string $name)
+    {
+        if (preg_match('/([a-zA-Zа-яА-ЯёЁ]+) ([a-zA-Zа-яА-ЯёЁ]+) ([a-zA-Zа-яА-ЯёЁ]+)/u', $name, $matches)) {
+            print_r($matches);
+            return $matches[1] . ' ' . mb_substr($matches[2], 0, 1) . '.' . mb_substr($matches[2], 0, 1) . '.';
+        } else {
+            return $name;
+        }
     }
 }

@@ -1,183 +1,13 @@
 <?php
 
-namespace app\models;
+namespace app\models\PaymentRequest;
 
 use app\components\helpers\CurrencyHelper;
-use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveRecord;
+use app\models\PaymentRequest;
+use app\models\Urgency;
 
-/**
- * Class Payment
- * @package app\models
- *
- * @property integer $id
- * @property string $code_1c
- * @property integer $customer_department_id
- * @property integer $executor_department_id
- * @property string $internal_number
- * @property integer $payer_organization_id
- * @property string $payment_part
- * @property integer $original_currency_id
- * @property integer $original_price
- * @property float $conversion_percent
- * @property integer $required_payment
- * @property integer $price_rub
- * @property integer $required_payment_rub
- * @property integer $contract_id
- * @property string $contract_date
- * @property string $contract_number
- * @property string $number
- * @property string $invoice_date
- * @property string $payment_date
- * @property string $payment_order_number
- * @property integer $counteragent_id
- * @property integer $product_id
- * @property integer $cashflow_item_id
- * @property string $description
- * @property integer $author_id
- * @property string $due_date
- * @property integer $urgency
- * @property integer $last_approver_id
- * @property string $expected_delivery
- * @property string $note
- * @property string $uuid
- * @property string $expense_date
- * @property string $status_1c
- * @property string $invoice_number
- * @property string $desired_payment_date
- * @property integer $invoice_recepient_affiliate_id
- * @property integer $bank_account_id
- * @property integer $has_documents
- * @property integer $status
- * @property integer $updated_at
- * @property integer $created_at
- *
- * @property Currency       $originalCurrency
- * @property Currency       $rubCurrency
- * @property CounterAgent   $counterAgent
- * @property Contract       $contract
- * @property Department     $customerDepartment
- * @property Department     $executorDepartment
- * @property Affiliate      $payerOrganization
- * @property Product        $product
- * @property CashflowItem   $cashflowItem
- * @property User           $author
- * @property Affiliate      $invoiceRecepient
- * @property BankAccount    $bankAccount
- * @property File[]         $attachments
- * @property User           $lastApprover
- *
- * @property string $statusLabel
- */
-class PaymentRequest extends ActiveRecord
+class PaymentRequestView extends PaymentRequest
 {
-    public static $rubCurrency;
-
-    const CURRENCY_CODE_RUB = 643;
-
-    const STATUS_NEW        = 1;
-    const STATUS_READY      = 2;
-    const STATUS_POSTPONED  = 3;
-
-    const STATUS_APPROVED   = 9;
-
-    const STATUS_SELECTED   = 10;
-    const STATUS_TO_BE_PAID = 11;
-    const STATUS_PAID       = 12;
-    const STATUS_CANCELLED  = 13;
-
-    /**
-     * @inheritdoc
-     */
-    public static function tableName()
-    {
-        return 'payment_request';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            //['internal_number', 'unique'],
-            [['code_1c'], 'string'],
-            [['has_documents'], 'boolean'],
-            [['status'], 'integer'],
-            [[
-                'original_currency_id',
-                'original_price',
-                'required_payment',
-                //'description',
-            ], 'required'],
-            // links
-            [[
-                'original_currency_id',
-                'counteragent_id',
-                'customer_department_id',
-                'executor_department_id',
-                'payer_organization_id',
-                'contract_id',
-                'product_id',
-                'cashflow_item_id',
-                'author_id',
-                'invoice_recepient_affiliate_id',
-                'bank_account_id',
-                'last_approver_id',
-            ], 'integer'],
-            // strings
-            [[
-                'internal_number',
-                'invoice_number',
-                'description',
-                'expected_delivery',
-                'note',
-                'contract_number',
-                'payment_order_number',
-                'status_1c',
-                'invoice_number',
-                'contract_number',
-            ], 'string'],
-            // prices
-            [[
-                'original_price',
-                'required_payment',
-                'price_rub',
-                'required_payment_rub',
-            ], 'integer'],
-            [[
-                'conversion_percent',
-                'payment_part',
-            ], 'number', 'min' => 0, 'max' => 100],
-            ['uuid', 'string', 'length' => 36],
-            // compare required payments and prices
-            ['required_payment', 'compare', 'compareAttribute' => 'original_price', 'operator' => '<=', 'type' => 'number'],
-            ['required_payment_rub', 'compare', 'compareAttribute' => 'price_rub', 'operator' => '<=', 'type' => 'number'],
-            // dates
-            [['invoice_date', 'payment_date', 'due_date', 'contract_date', 'desired_payment_date', 'expense_date'], 'string'],
-            [['invoice_date', 'payment_date', 'due_date', 'contract_date', 'desired_payment_date', 'expense_date'], 'date', 'format' => 'php:Y-m-d'],
-            // 1C
-            ['code_1c', 'string'],
-            ['code_1c', 'unique'],
-            // urgency
-            ['urgency', 'integer'],
-            ['urgency', 'in', 'range' => array_keys(Urgency::getList())],
-            // check consistency
-            ['original_currency_id',    'exist', 'targetClass' => Currency::class, 'targetAttribute' => 'id'],
-            ['counteragent_id',         'exist', 'targetClass' => CounterAgent::class, 'targetAttribute' => 'id'],
-            ['original_currency_id',    'exist', 'targetClass' => Currency::class, 'targetAttribute' => 'id'],
-            ['contract_id',             'exist', 'targetClass' => Contract::class, 'targetAttribute' => 'id'],
-            ['product_id',              'exist', 'targetClass' => Product::class, 'targetAttribute' => 'id'],
-            ['cashflow_item_id',        'exist', 'targetClass' => CashflowItem::class, 'targetAttribute' => 'id'],
-            ['author_id',               'exist', 'targetClass' => User::class, 'targetAttribute' => 'id'],
-            ['payer_organization_id',   'exist', 'targetClass' => Affiliate::class, 'targetAttribute' => 'id'],
-            [[
-                'customer_department_id',
-                'executor_department_id'
-            ], 'exist', 'targetClass' => Department::class, 'targetAttribute' => 'id'],
-        ];
-    }
-
     public function attributeLabels()
     {
         return [
@@ -263,31 +93,6 @@ class PaymentRequest extends ActiveRecord
         ];
     }
 
-    public static function getStatusLabels() : array
-    {
-        return [
-            self::STATUS_NEW => \Yii::t('app', 'New'),
-            self::STATUS_READY => \Yii::t('app', 'Ready'),
-            self::STATUS_APPROVED => \Yii::t('app', 'Approved'),
-            self::STATUS_SELECTED => \Yii::t('app', 'Selected'),
-            self::STATUS_TO_BE_PAID => \Yii::t('app', 'To be paid'),
-            self::STATUS_PAID => \Yii::t('app', 'Paid'),
-            self::STATUS_CANCELLED => \Yii::t('app', 'Cancelled'),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
-    {
-        return [
-            'timestamp' => [
-                'class' => TimestampBehavior::class,
-            ],
-        ];
-    }
-
 
     /* --- Human-readable dates ------------------------------------------------------------------------------------- */
     public function getInvoiceDateReadable()
@@ -346,14 +151,6 @@ class PaymentRequest extends ActiveRecord
         return $this->has_documents !== 0 ? \Yii::t('app', 'Yes') : \Yii::t('app', 'No');
     }
 
-    public function init()
-    {
-        $this->rubCurrency = $this->getRubCurrency();
-        //$this->originalCurrency = Currency::findOne(['id' => $this->original_currency_id]);
-    }
-
-    /* --- Human-readable sums -------------------------------------------------------------------------------------- */
-    //FIXME
     public function getOriginalPriceReadable()
     {
         if (empty($this->original_price)) {
@@ -594,7 +391,7 @@ class PaymentRequest extends ActiveRecord
 
     public function getUrgencyReadable()
     {
-        return isset(Urgency::getList()[$this->urgency]) ?? null;
+        return Urgency::getList()[$this->urgency] ?? null;
     }
 
     public function getIsIn1CReadable()
@@ -632,137 +429,5 @@ class PaymentRequest extends ActiveRecord
     {
         $labels = $this->getStatusLabels();
         return $labels[$this->status] ?? $this->status;
-    }
-
-    /* --- Relations ------------------------------------------------------------------------------------------------ */
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCounterAgent()
-    {
-        return $this->hasOne(CounterAgent::class, ['id' => 'counteragent_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getContract()
-    {
-        return $this->hasOne(Contract::class, ['id' => 'contract_id']);
-    }
-
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getOriginalCurrency()
-    {
-        return $this->hasOne(Currency::class, ['id' => 'original_currency_id']);
-    }
-
-//    /**
-//     * @param Currency $currency
-//     */
-//    public function setOriginalCurrency(Currency $currency)
-//    {
-//        $this->originalCurrency = $currency;
-//    }
-
-    /**
-     * @return null|Currency
-     */
-    public function getRubCurrency()
-    {
-        return Currency::findOne(['id' => self::CURRENCY_CODE_RUB]);
-    }
-
-    /**
-     * @param Currency $currency
-     */
-    public function setRubCurrency(Currency $currency)
-    {
-        $this->rubCurrency = $currency;
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCustomerDepartment()
-    {
-        return $this->hasOne(Department::class, ['id' => 'customer_department_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getExecutorDepartment()
-    {
-        return $this->hasOne(Department::class, ['id' => 'executor_department_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPayerOrganization()
-    {
-        return $this->hasOne(Affiliate::class, ['id' => 'payer_organization_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getInvoiceRecepient()
-    {
-        return $this->hasOne(Affiliate::class, ['id' => 'invoice_recepient_affiliate_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getBankAccount()
-    {
-        return $this->hasOne(BankAccount::class, ['id' => 'bank_account_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getProduct()
-    {
-        return $this->hasOne(Product::class, ['id' => 'product_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCashflowItem()
-    {
-        return $this->hasOne(CashflowItem::class, ['id' => 'cashflow_item_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAuthor()
-    {
-        return $this->hasOne(User::class, ['id' => 'author_id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAttachments()
-    {
-        return $this->hasMany(File::class, ['id' => 'file_id'])
-            ->viaTable(PaymentRequestFile::tableName(), ['payment_request_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getLastApprover()
-    {
-        return $this->hasOne(User::class, ['id' => 'last_approver_id']);
     }
 }

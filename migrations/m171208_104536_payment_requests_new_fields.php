@@ -66,8 +66,6 @@ class m171208_104536_payment_requests_new_fields extends Migration
         $this->addColumn('payment_request', 'has_documents', $this->boolean());
         $this->addColumn('payment_request', 'payment_order_number', $this->string(40));
 
-        $this->createIndex('pr_internal_number_unique', 'payment_request', 'internal_number', true);
-
         $this->addForeignKey(
             'pr_fk_recepient',
             'payment_request',
@@ -196,7 +194,6 @@ class m171208_104536_payment_requests_new_fields extends Migration
         $this->dropColumn('payment_request', 'bank_account_id');
         $this->dropColumn('payment_request', 'has_documents');
         $this->dropColumn('payment_request', 'payment_order_number');
-        $this->dropIndex('pr_internal_number_unique', 'payment_request');
 
         $this->dropTable('bank_account');
         $this->dropTable('bank');

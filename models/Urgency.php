@@ -4,6 +4,11 @@ namespace app\models;
 
 class Urgency
 {
+    const VERY_URGENT = 0;
+    const URGENT = 1;
+    const MEDIUM = 2;
+    const LOW = 3;
+
     /**
      * @return array
      */

@@ -97,7 +97,6 @@ class m171129_175647_budget extends Migration
         $departments = [
             ['БухЛ', 'Бухгалтерия Люмэкс', 'Бухгалтерия Люмэкс'],
             ['ПРО', 'Производственный отдел', 'Производственный отдел'],
-            ['ПРО', 'ПРО', 'ПРО'],
             ['ЛЦ', 'Люмэкс Центрум', 'Люмэкс Центрум'],
             ['ГБ', 'Генбит (Центрум)', 'Генбит (Центрум)'],
             ['LA', 'Lumex Analytics', 'Lumex Analytics'],
@@ -110,13 +109,14 @@ class m171129_175647_budget extends Migration
             ['HKI', 'Hong Kong', 'Hong Kong'],
             ['LIF', 'LI Finance', 'LI Finance'],
             ['ЛМарин', 'Люмэкс Марин', 'Люмэкс Марин'],
+            ['ЛММ', 'ЛММ', 'ЛММ'],
         ];
         foreach ($departments as $i => $row) {
             $departments[$i][] = time();
             $departments[$i][] = time();
         }
 
-        //$this->batchInsert('department', ['short_name', 'name', 'full_name', 'created_at', 'updated_at'], $departments);
+        $this->batchInsert('department', ['short_name', 'name', 'full_name', 'created_at', 'updated_at'], $departments);
 
         $departments = Department::find()->select('id, short_name')->all();
         $departments = array_column($departments, 'id', 'short_name');

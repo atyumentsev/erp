@@ -15,7 +15,7 @@ class ViewableFields
         'payerOrganizationName',
         'payment_part',
         'currencyWithConversion',
-        'originalPriceFormatted',
+        'originalPriceReadable',
         'requiredPaymentReadable',
         'priceRubReadable',
         'requiredPaymentRubReadable',
@@ -44,9 +44,10 @@ class ViewableFields
         'executorDepartmentShortNameWithShortLabel',
         'payerOrganizationName',
         'currencyWithConversion',
-        'originalPriceFormatted',
-        'requiredPaymentFormatted',
-        'requiredPaymentRubFormatted',
+        'originalPriceReadable',
+        'requiredPaymentReadable',
+        'priceRubReadable',
+        'requiredPaymentRubReadable',
         'contractName',
         'counterAgentName',
         'productName',
@@ -57,6 +58,13 @@ class ViewableFields
         'urgencyReadable',
         'expectedDelivery',
         'statusReadable',
+    ];
+
+    const RIGHT_ALIGN_FIELDS = [
+        'originalPriceReadable',
+        'requiredPaymentReadable',
+        'priceRubReadable',
+        'requiredPaymentRubReadable',
     ];
 
     /**
@@ -72,10 +80,51 @@ class ViewableFields
             ]);
 
         if (!$settings) {
-            return self::DEFAULT_FIELDS;
+            $fields =  self::DEFAULT_FIELDS;
         } else {
-            return json_decode($settings->value);
+            $fields = json_decode($settings->value);
         }
+
+        $ret = [];
+        foreach ($fields as $field) {
+            if (in_array($field, self::RIGHT_ALIGN_FIELDS)) {
+                $ret[] = [
+                    'attribute' => $field,
+                    'contentOptions' => ['class' => 'text-right'],
+                    //'headerOptions' => ['class' => 'text-center']
+                ];
+            } else {
+                $ret[] = $field;
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+     * @param int $user_id
+     * @return array
+     */
+    public static function getUserFieldsList(int $user_id) : array
+    {
+        /** @var UserSettings $settings */
+        $settings = UserSettings::findOne([
+            'user_id' => $user_id,
+            'name' => 'payment_requests_fields',
+        ]);
+
+        if (!$settings) {
+            $fields =  self::DEFAULT_FIELDS;
+        } else {
+            $fields = json_decode($settings->value);
+        }
+
+        $ret = [];
+        foreach ($fields as $field) {
+            $ret[] = $field;
+        }
+
+        return $ret;
     }
 
     /**

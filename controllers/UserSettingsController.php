@@ -54,7 +54,7 @@ class UserSettingsController extends Controller
     public function actionPaymentRequests()
     {
         $available_fields = ViewableFields::getAvailableFields();
-        $active_fields = ViewableFields::getUserFields(\Yii::$app->user->id);
+        $active_fields = ViewableFields::getUserFieldsList(\Yii::$app->user->id);
         return $this->render('payment_requests', [
             'available_fields' => $available_fields,
             'active_fields' => $active_fields,
